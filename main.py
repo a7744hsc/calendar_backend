@@ -10,18 +10,17 @@ auth = HTTPBasicAuth()
 
 @app.route('/calendar/v1.0/events', methods=['GET'])
 @auth.login_required
-def hello_world():
+def get_events():
     db = get_db();
     cur = db.cursor();
-    date = request.args.get('date')
-    if date is not None:
-        cur.execute("""select id,event_date,title,details from events where date(event_date)=?""", (date,))
+    date_str = request.args.get('date')
+    if date_str is not None:
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        cur.execute("""select id,event_date,title,details from events where date(event_date)=?""", (target_date,))
     else:
         cur.execute("""SELECT id,event_date,title,details from events""")
 
-    print(date)
     results = cur.fetchall()
-    print(results)
 
     return jsonify(results)
 
