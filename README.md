@@ -29,4 +29,11 @@ APIs available:
 
 
 TODO:
-[x] DateTime in SQLite accept data without time 
+- [ ] DateTime in SQLite accept data without time 
+- [ ] Database return datatime instead of string for event_time 
+- [ ] Authentication 
+- [ ] update event api
+- [ ] use sqlalchemy 
+- [x] refine 400 page to json component
+- [ ] Code/Structure refactor
+- [ ] Write Test

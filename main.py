@@ -1,4 +1,4 @@
-from flask import Flask, g, jsonify, request, abort
+from flask import Flask, g, jsonify, request, abort, make_response
 import os
 import sqlite3
 from datetime import datetime
@@ -81,6 +81,11 @@ def get_db():
     if not hasattr(g, 'sqlite_db'):
         g.sqlite_db = connect_db()
     return g.sqlite_db
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    return make_response(jsonify({'Error': 'Your request could not be understood'}), 400)
 
 
 @app.teardown_appcontext
