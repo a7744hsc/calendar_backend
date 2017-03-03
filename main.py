@@ -1,13 +1,15 @@
 from flask import Flask, g, jsonify, request, abort, make_response
+from flask.ext.httpauth import HTTPBasicAuth
 import os
 import sqlite3
 from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object(__name__)  # load config from this file , flaskr.py
-
+auth = HTTPBasicAuth()
 
 @app.route('/calendar/v1.0/events', methods=['GET'])
+@auth.login_required
 def hello_world():
     db = get_db();
     cur = db.cursor();
@@ -25,6 +27,7 @@ def hello_world():
 
 
 @app.route('/calendar/v1.0/events', methods=['POST'])
+@auth.login_required
 def create_task():
     if not request.json or 'title' not in request.json \
             or 'details' not in request.json or 'event_date' not in request.json:
@@ -46,7 +49,9 @@ def create_task():
 
     return jsonify({'Success': 'True'}), 201
 
+
 @app.route('/calendar/v1.0/events/<event_id>', methods=['GET'])
+@auth.login_required
 def get_event_by_id(event_id):
     db = get_db()
     cur = db.cursor()
@@ -57,6 +62,14 @@ def get_event_by_id(event_id):
 
     return jsonify(results)
 
+@auth.verify_password
+def verify_pw(username, password):
+    return username == 'user' and password == 'passwd'
+
+
+@auth.error_handler
+def unauthorized():
+    return make_response(jsonify({'error': 'Unauthorized access'}),401)
 
 def dict_factory(cursor, row):
     d = {}

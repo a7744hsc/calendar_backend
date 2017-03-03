@@ -3,7 +3,7 @@ This app is developed on python 3.6 and Flask 0.12
 Installation
 ============
 1. install python and pip 
-2. pip install flask
+2. pip install flask flask-httpauth
 
 Run
 =========
@@ -31,7 +31,7 @@ APIs available:
 TODO:
 - [ ] DateTime in SQLite accept data without time 
 - [ ] Database return datatime instead of string for event_time 
-- [ ] Authentication 
+- [x] Authentication 
 - [ ] update event api
 - [ ] use sqlalchemy 
 - [x] refine 400 page to json component
