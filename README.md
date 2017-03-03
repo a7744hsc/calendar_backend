@@ -20,9 +20,13 @@ APIs available:
     
     body:{"title":"first from post",
             "details":"still no details",
-            "event_date":"2017-03-03 11:50:00"
+            "event_date":"2017-03-03 11:50:00" //%Y-%m-%d %H:%M:%S
         }
     
  
 ### Endpoint: calendar/v1.0/events?date=yyyy-mm-dd 
  1. [GET]get all events for special day
+
+
+TODO:
+[x] DateTime in SQLite accept data without time 

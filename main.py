@@ -1,6 +1,7 @@
 from flask import Flask, g, jsonify, request, abort
 import os
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object(__name__)  # load config from this file , flaskr.py
@@ -28,30 +29,33 @@ def create_task():
     if not request.json or 'title' not in request.json \
             or 'details' not in request.json or 'event_date' not in request.json:
         abort(400)
-    event = {
-        'title': request.json['title'],
-        'details': request.json['details'],
-        'event_date': request.json['event_date']
-    }
-    db = get_db();
-    cur = db.cursor();
-    cur.execute("""INSERT INTO events ( event_date, title, details) VALUES (?,?,?)""",
-                (event['event_date'],event['title'],event['details']))
+
+    title = request.json['title']
+    details = request.json['details']
+    try:
+        event_date = datetime.strptime(request.json['event_date'], '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        abort(400)
+
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("""INSERT INTO events ( event_date,created_date,last_modified_date, title, details) VALUES (?,?,?,?,?)""",
+                (event_date, datetime.now(), datetime.now(), title, details))
     db.commit()
 
 
-    return jsonify({'event': event}), 201
+    return jsonify({'Success': 'True'}), 201
 
-# @app.route('/calendar/v1.0/events/<event_id>', methods=['GET'])
-# def get_event_by_id(event_id):
-#     db = get_db()
-#     cur = db.cursor()
-#     cur.execute('SELECT id,date,title,details from events;')
-#     # print(cur.fetchone()['title'])
-#     results = cur.fetchall()
-#     print(type(event_id))
-#
-#     return jsonify(results)
+@app.route('/calendar/v1.0/events/<event_id>', methods=['GET'])
+def get_event_by_id(event_id):
+    db = get_db()
+    cur = db.cursor()
+    cur.execute('SELECT id,date,title,details from events;')
+    # print(cur.fetchone()['title'])
+    results = cur.fetchall()
+    print(type(event_id))
+
+    return jsonify(results)
 
 
 def dict_factory(cursor, row):
