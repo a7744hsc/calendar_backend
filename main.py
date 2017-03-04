@@ -95,6 +95,12 @@ def get_db():
     return g.sqlite_db
 
 
+@app.errorhandler(500)
+def internal_error(error):
+    return make_response(jsonify({'Error': str(error)}), 500)
+
+
+
 @app.errorhandler(400)
 def bad_request(error):
     return make_response(jsonify({'Error': 'Your request could not be understood'}), 400)
