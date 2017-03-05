@@ -20,11 +20,11 @@ APIs available:
     
     body:{"title":"first from post",
             "details":"still no details",
-            "event_date":"2017-03-03 11:50:00" //%Y-%m-%d %H:%M:%S
+            "event_date":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S  
         }
     
  
-### Endpoint: calendar/v1.0/events?date=yyyy-mm-dd 
+### Endpoint: calendar/v1.0/events?date=2017_03_03    //accept %Y_%m_%d or %Y-%m-%d
  1. [GET]get all events for special day
 
 

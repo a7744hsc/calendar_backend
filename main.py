@@ -3,6 +3,7 @@ from flask_httpauth import HTTPBasicAuth
 import os
 from datetime import datetime
 from db import get_db
+from utils import parse_date, parse_datetime
 
 app = Flask(__name__)
 app.config.from_object(__name__)  # load config from this file , flaskr.py
@@ -16,7 +17,7 @@ def get_events():
     cur = db.cursor()
     date_str = request.args.get('date')
     if date_str is not None:
-        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        target_date = parse_date(date_str)
         cur.execute("""select id,event_date,title,details from events where date(event_date)=?""", (target_date,))
     else:
         cur.execute("""SELECT id,event_date,title,details from events""")
@@ -35,16 +36,13 @@ def create_task():
 
     title = request.json['title']
     details = request.json['details']
-    try:
-        event_date = datetime.strptime(request.json['event_date'], '%Y-%m-%d %H:%M:%S')
-    except ValueError:
-        abort(400)
+    event_dt = parse_datetime(request.json['event_date'])
 
     db = get_db(app.config['DATABASE'])
     cur = db.cursor()
     cur.execute(
-        """INSERT INTO events ( event_date,created_date,last_modified_date, title, details) VALUES (?,?,?,?,?)""",
-        (event_date, datetime.now(), datetime.now(), title, details))
+            """INSERT INTO events ( event_date,created_date,last_modified_date, title, details) VALUES (?,?,?,?,?)""",
+            (event_dt, datetime.now(), datetime.now(), title, details))
     db.commit()
 
     return jsonify({'Success': 'True'}), 201
@@ -75,7 +73,7 @@ def unauthorized():
 
 @app.errorhandler(500)
 def internal_error(error):
-    return make_response(jsonify({'Error': str(error)}), 500)
+    return make_response(jsonify({'Error': str(error)}), 400)
 
 
 @app.errorhandler(400)
