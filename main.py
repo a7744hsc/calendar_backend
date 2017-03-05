@@ -1,18 +1,19 @@
 from flask import Flask, g, jsonify, request, abort, make_response
-from flask.ext.httpauth import HTTPBasicAuth
+from flask_httpauth import HTTPBasicAuth
 import os
-import sqlite3
 from datetime import datetime
+from db import get_db
 
 app = Flask(__name__)
 app.config.from_object(__name__)  # load config from this file , flaskr.py
 auth = HTTPBasicAuth()
 
+
 @app.route('/calendar/v1.0/events', methods=['GET'])
 @auth.login_required
 def get_events():
-    db = get_db();
-    cur = db.cursor();
+    db = get_db(app.config['DATABASE'])
+    cur = db.cursor()
     date_str = request.args.get('date')
     if date_str is not None:
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -39,12 +40,12 @@ def create_task():
     except ValueError:
         abort(400)
 
-    db = get_db()
+    db = get_db(app.config['DATABASE'])
     cur = db.cursor()
-    cur.execute("""INSERT INTO events ( event_date,created_date,last_modified_date, title, details) VALUES (?,?,?,?,?)""",
-                (event_date, datetime.now(), datetime.now(), title, details))
+    cur.execute(
+        """INSERT INTO events ( event_date,created_date,last_modified_date, title, details) VALUES (?,?,?,?,?)""",
+        (event_date, datetime.now(), datetime.now(), title, details))
     db.commit()
-
 
     return jsonify({'Success': 'True'}), 201
 
@@ -52,7 +53,7 @@ def create_task():
 @app.route('/calendar/v1.0/events/<event_id>', methods=['GET'])
 @auth.login_required
 def get_event_by_id(event_id):
-    db = get_db()
+    db = get_db(app.config['DATABASE'])
     cur = db.cursor()
     cur.execute('SELECT id,date,title,details from events;')
     # print(cur.fetchone()['title'])
@@ -61,6 +62,7 @@ def get_event_by_id(event_id):
 
     return jsonify(results)
 
+
 @auth.verify_password
 def verify_pw(username, password):
     return username == 'user' and password == 'passwd'
@@ -68,37 +70,12 @@ def verify_pw(username, password):
 
 @auth.error_handler
 def unauthorized():
-    return make_response(jsonify({'error': 'Unauthorized access'}),401)
-
-def dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
-
-
-def connect_db():
-    print("""Connects to the specific database.""")
-    rv = sqlite3.connect(app.config['DATABASE'])
-    # rv.row_factory = sqlite3.Row
-    rv.row_factory = dict_factory
-
-    return rv
-
-
-def get_db():
-    """Opens a new database connection if there is none yet for the
-    current application context.
-    """
-    if not hasattr(g, 'sqlite_db'):
-        g.sqlite_db = connect_db()
-    return g.sqlite_db
+    return make_response(jsonify({'error': 'Unauthorized access'}), 401)
 
 
 @app.errorhandler(500)
 def internal_error(error):
     return make_response(jsonify({'Error': str(error)}), 500)
-
 
 
 @app.errorhandler(400)
@@ -108,16 +85,16 @@ def bad_request(error):
 
 @app.teardown_appcontext
 def close_db(error):
-    """Closes the database again at the end of the request."""
+    print("""Closes the database again at the end of the request.""")
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
 
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
-    DATABASE=os.path.join(app.root_path, 'calendar.db'),
-    SECRET_KEY='development key',
-    USERNAME='admin',
-    PASSWORD='default'
+        DATABASE=os.path.join(app.root_path, 'calendar.db'),
+        SECRET_KEY='development key',
+        USERNAME='admin',
+        PASSWORD='default'
 ))
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
