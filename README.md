@@ -20,7 +20,8 @@ APIs available:
     
     body:{"title":"first from post",
             "details":"still no details",
-            "event_date":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S  
+            "event_start":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S  
+            "event_end":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S  
         }
     
  

@@ -18,9 +18,9 @@ def get_events():
     date_str = request.args.get('date')
     if date_str is not None:
         target_date = parse_date(date_str)
-        cur.execute("""select id,event_date,title,details from events where date(event_date)=?""", (target_date,))
+        cur.execute("""select id,strftime('%H:%M:%S', event_start),strftime('%H:%M:%S', event_end),event_owner,title,details from events where date(event_start)=?""", (target_date,))
     else:
-        cur.execute("""SELECT id,event_date,title,details from events""")
+        cur.execute("""SELECT id,event_start,event_end,event_owner,title,details from events""")
 
     results = cur.fetchall()
 
@@ -30,19 +30,21 @@ def get_events():
 @app.route('/calendar/v1.0/events', methods=['POST'])
 @auth.login_required
 def create_task():
-    if not request.json or 'title' not in request.json \
-            or 'details' not in request.json or 'event_date' not in request.json:
+    if not request.json or 'title' not in request.json or 'event_owner' not in request.json\
+            or 'details' not in request.json or 'event_start' not in request.json or 'event_end' not in request.json:
         abort(400)
 
     title = request.json['title']
     details = request.json['details']
-    event_dt = parse_datetime(request.json['event_date'])
+    start_dt = parse_datetime(request.json['event_start'])
+    end_dt = parse_datetime(request.json['event_end'])
+    owner = request.json['event_owner']
 
     db = get_db(app.config['DATABASE'])
     cur = db.cursor()
     cur.execute(
-            """INSERT INTO events ( event_date,created_date,last_modified_date, title, details) VALUES (?,?,?,?,?)""",
-            (event_dt, datetime.now(), datetime.now(), title, details))
+            """INSERT INTO events ( event_start,event_end,created_date,last_modified_date,event_owner, title, details) VALUES (?,?,?,?,?)""",
+            (start_dt,end_dt, datetime.now(), datetime.now(), owner, title, details))
     db.commit()
 
     return jsonify({'Success': 'True'}), 201
@@ -62,28 +64,15 @@ def get_date():
     db = get_db(app.config['DATABASE'])
     cur = db.cursor()
     cur.execute(
-            """select id,event_date from events WHERE strftime('%Y%m', event_date) = ?""",
+            """select id,event_start from events WHERE strftime('%Y%m', event_start) = ?""",
             (date_str,))
     results = cur.fetchall()
 
     days_with_event = set()
     for evt in results:
-        days_with_event.add(datetime.strptime(evt['event_date'], '%Y-%m-%d %H:%M:%S').day)
+        days_with_event.add(datetime.strptime(evt['event_start'], '%Y-%m-%d %H:%M:%S').day)
 
     return jsonify(list(days_with_event))
-
-
-@app.route('/calendar/v1.0/events/<event_id>', methods=['GET'])
-@auth.login_required
-def get_event_by_id(event_id):
-    db = get_db(app.config['DATABASE'])
-    cur = db.cursor()
-    cur.execute('SELECT id,date,title,details from events;')
-    # print(cur.fetchone()['title'])
-    results = cur.fetchall()
-    print(type(event_id))
-
-    return jsonify(results)
 
 
 @auth.verify_password
