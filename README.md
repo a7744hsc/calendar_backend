@@ -26,6 +26,9 @@ APIs available:
  
 ### Endpoint: calendar/v1.0/events?date=2017_03_03    //accept %Y_%m_%d or %Y-%m-%d
  1. [GET]get all events for special day
+ 
+ ### Endpoint: calendar/v1.0/daysWithEvent?year=2017&month=3
+ 1. [GET]get a list of day for the month which have events with them. [1,2,3,21,25]
 
 
 TODO:

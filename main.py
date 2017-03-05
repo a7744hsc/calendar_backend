@@ -48,6 +48,31 @@ def create_task():
     return jsonify({'Success': 'True'}), 201
 
 
+@app.route('/calendar/v1.0/daysWithEvent', methods=['GET'])
+@auth.login_required
+def get_date():
+    try:
+        year = request.args.get('year')
+        month = request.args.get('month')
+        date = datetime(int(year), int(month), 3)
+        date_str = date.strftime('%Y%m')
+    except Exception:
+        abort(400)
+
+    db = get_db(app.config['DATABASE'])
+    cur = db.cursor()
+    cur.execute(
+            """select id,event_date from events WHERE strftime('%Y%m', event_date) = ?""",
+            (date_str,))
+    results = cur.fetchall()
+
+    days_with_event = set()
+    for evt in results:
+        days_with_event.add(datetime.strptime(evt['event_date'], '%Y-%m-%d %H:%M:%S').day)
+
+    return jsonify(list(days_with_event))
+
+
 @app.route('/calendar/v1.0/events/<event_id>', methods=['GET'])
 @auth.login_required
 def get_event_by_id(event_id):
@@ -83,8 +108,8 @@ def bad_request(error):
 
 @app.teardown_appcontext
 def close_db(error):
-    print("""Closes the database again at the end of the request.""")
     if hasattr(g, 'sqlite_db'):
+        print("""Closes the database again at the end of the request.""")
         g.sqlite_db.close()
 
 
