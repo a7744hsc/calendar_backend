@@ -9,6 +9,7 @@ Run
 =========
 On Linux or MacOS, just one command in terminal
 >FLASK_APP=main.py flask run
+Or you can just run the `main.py` 
 
 APIs available:
 =======
@@ -20,8 +21,8 @@ APIs available:
     
     body:{"title":"first from post",
             "details":"still no details",
-            "event_start":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S  
-            "event_end":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S  
+            "event_start":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
+            "event_end":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
         }
     
  
@@ -37,7 +38,7 @@ TODO:
 - [ ] Database return datatime instead of string for event_time 
 - [x] Authentication 
 - [ ] update event api
-- [ ] use sqlalchemy 
+- [x] use sqlalchemy 
 - [x] refine 400 page to json component
 - [ ] Code/Structure refactor
 - [ ] Write Test

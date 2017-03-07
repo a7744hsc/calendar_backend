@@ -52,7 +52,7 @@ def create_task():
     db_alchemy.session.add(evt)
     db_alchemy.session.commit()
 
-    return jsonify({'Success': 'True','event': evt.as_dict()}), 201
+    return jsonify({'Success': 'True', 'event': evt.as_dict()}), 201
 
 
 @app.route('/calendar/v1.0/daysWithEvent', methods=['GET'])
@@ -96,3 +96,7 @@ def close_db(error):
     if hasattr(g, 'sqlite_db'):
         print("""Closes the database again at the end of the request.""")
         g.sqlite_db.close()
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')
