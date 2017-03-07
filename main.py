@@ -1,10 +1,10 @@
 from flask import Flask, g, jsonify, request, abort, make_response
 from flask_httpauth import HTTPBasicAuth
-from datetime import datetime, date
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from utils import parse_date, parse_datetime
 import os
-from sqlalchemy import Date, cast, func, and_, extract
+from sqlalchemy import func, and_, extract
 
 app = Flask(__name__)
 
@@ -16,9 +16,9 @@ app.config.update(dict(
         SQLALCHEMY_ECHO=True,
         SECRET_KEY='development key',
 ))
-app.config.from_envvar('FLASKR_SETTINGS', silent=True)
-db_alchemy = SQLAlchemy(app)
+
 auth = HTTPBasicAuth()
+db_alchemy = SQLAlchemy(app)
 from models import *
 
 
