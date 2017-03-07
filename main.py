@@ -1,36 +1,44 @@
 from flask import Flask, g, jsonify, request, abort, make_response
 from flask_httpauth import HTTPBasicAuth
-import os
-from datetime import datetime
-from db import get_db
+from datetime import datetime, date
+from flask_sqlalchemy import SQLAlchemy
 from utils import parse_date, parse_datetime
+import os
+from sqlalchemy import Date, cast, func, and_, extract
 
 app = Flask(__name__)
-app.config.from_object(__name__)  # load config from this file , flaskr.py
+
+# Load default config and override config from an environment variable
+app.config.update(dict(
+        DATABASE=os.path.join(app.root_path, 'calendar.db'),
+        SQLALCHEMY_DATABASE_URI='sqlite:///calendar.db',
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        SQLALCHEMY_ECHO=True,
+        SECRET_KEY='development key',
+))
+app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+db_alchemy = SQLAlchemy(app)
 auth = HTTPBasicAuth()
+from models import *
 
 
 @app.route('/calendar/v1.0/events', methods=['GET'])
 @auth.login_required
 def get_events():
-    db = get_db(app.config['DATABASE'])
-    cur = db.cursor()
     date_str = request.args.get('date')
     if date_str is not None:
         target_date = parse_date(date_str)
-        cur.execute("""select id,strftime('%H:%M:%S', event_start),strftime('%H:%M:%S', event_end),event_owner,title,details from events where date(event_start)=?""", (target_date,))
+        results = Event.query.filter(func.date(Event.event_start) == target_date).all()
     else:
-        cur.execute("""SELECT id,event_start,event_end,event_owner,title,details from events""")
+        results = Event.query.all()
 
-    results = cur.fetchall()
-
-    return jsonify(results)
+    return jsonify([r.as_dict() for r in results])
 
 
 @app.route('/calendar/v1.0/events', methods=['POST'])
 @auth.login_required
 def create_task():
-    if not request.json or 'title' not in request.json or 'event_owner' not in request.json\
+    if not request.json or 'title' not in request.json or 'event_owner' not in request.json \
             or 'details' not in request.json or 'event_start' not in request.json or 'event_end' not in request.json:
         abort(400)
 
@@ -39,15 +47,12 @@ def create_task():
     start_dt = parse_datetime(request.json['event_start'])
     end_dt = parse_datetime(request.json['event_end'])
     owner = request.json['event_owner']
+    evt = Event(event_start=start_dt, event_end=end_dt, created_date=datetime.now(), last_modified_date=datetime.now(),
+                event_owner=owner, title=title, details=details)
+    db_alchemy.session.add(evt)
+    db_alchemy.session.commit()
 
-    db = get_db(app.config['DATABASE'])
-    cur = db.cursor()
-    cur.execute(
-            """INSERT INTO events ( event_start,event_end,created_date,last_modified_date,event_owner, title, details) VALUES (?,?,?,?,?)""",
-            (start_dt,end_dt, datetime.now(), datetime.now(), owner, title, details))
-    db.commit()
-
-    return jsonify({'Success': 'True'}), 201
+    return jsonify({'Success': 'True','event': evt.as_dict()}), 201
 
 
 @app.route('/calendar/v1.0/daysWithEvent', methods=['GET'])
@@ -56,22 +61,13 @@ def get_date():
     try:
         year = request.args.get('year')
         month = request.args.get('month')
-        date = datetime(int(year), int(month), 3)
-        date_str = date.strftime('%Y%m')
     except Exception:
         abort(400)
-
-    db = get_db(app.config['DATABASE'])
-    cur = db.cursor()
-    cur.execute(
-            """select id,event_start from events WHERE strftime('%Y%m', event_start) = ?""",
-            (date_str,))
-    results = cur.fetchall()
-
+    results = Event.query.filter(and_(extract('year', Event.event_start) == year,
+                                      extract('month', Event.event_start) == month)).all()
     days_with_event = set()
     for evt in results:
-        days_with_event.add(datetime.strptime(evt['event_start'], '%Y-%m-%d %H:%M:%S').day)
-
+        days_with_event.add(evt.event_start.day)
     return jsonify(list(days_with_event))
 
 
@@ -100,13 +96,3 @@ def close_db(error):
     if hasattr(g, 'sqlite_db'):
         print("""Closes the database again at the end of the request.""")
         g.sqlite_db.close()
-
-
-# Load default config and override config from an environment variable
-app.config.update(dict(
-        DATABASE=os.path.join(app.root_path, 'calendar.db'),
-        SECRET_KEY='development key',
-        USERNAME='admin',
-        PASSWORD='default'
-))
-app.config.from_envvar('FLASKR_SETTINGS', silent=True)
