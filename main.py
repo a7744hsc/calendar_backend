@@ -105,11 +105,14 @@ def bad_request(error):
     return make_response(jsonify({'Error': 'Your request could not be understood'}), 400)
 
 
+@app.errorhandler(401)
+def bad_request(error):
+    return make_response(jsonify({'Error': 'Unauthorized access'}), 401)
+
+
 @app.teardown_appcontext
 def close_db(error):
-    if hasattr(g, 'sqlite_db'):
-        print("""Closes the database again at the end of the request.""")
-        g.sqlite_db.close()
+    pass
 
 
 if __name__ == '__main__':

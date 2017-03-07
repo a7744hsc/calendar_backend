@@ -46,3 +46,5 @@ TODO:
 - [x] refine 400 page to json component
 - [ ] Code/Structure refactor
 - [ ] Write Test
+- [ ] Add user and permission control system.
+- [ ] Replace simple token based post with user and permission
