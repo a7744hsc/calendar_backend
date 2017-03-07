@@ -34,8 +34,8 @@ APIs available:
 
 
 TODO:
-- [ ] DateTime in SQLite accept data without time 
-- [ ] Database return datatime instead of string for event_time 
+- [x] DateTime in SQLite accept data without time (SQLite store datetime as string.)
+- [x] Database return datatime instead of string for event_time(Solved with SQLAlchemy) 
 - [x] Authentication 
 - [ ] update event api
 - [x] use sqlalchemy 
