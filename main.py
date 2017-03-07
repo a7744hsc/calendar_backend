@@ -1,4 +1,5 @@
 from flask import Flask, g, jsonify, request, abort, make_response
+from CustomJSONEncoder import CustomJSONEncoder
 from flask_httpauth import HTTPBasicAuth
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
@@ -13,10 +14,10 @@ app.config.update(dict(
         DATABASE=os.path.join(app.root_path, 'calendar.db'),
         SQLALCHEMY_DATABASE_URI='sqlite:///calendar.db',
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SQLALCHEMY_ECHO=True,
+        SQLALCHEMY_ECHO=False,
         SECRET_KEY='development key',
 ))
-
+app.json_encoder = CustomJSONEncoder
 auth = HTTPBasicAuth()
 db_alchemy = SQLAlchemy(app)
 from models import *
@@ -28,16 +29,29 @@ def get_events():
     date_str = request.args.get('date')
     if date_str is not None:
         target_date = parse_date(date_str)
-        results = Event.query.filter(func.date(Event.event_start) == target_date).all()
+        qresults = db_alchemy.session.query(Event).filter(func.date(Event.event_start) == target_date).all()
+        results = []
+        for r in qresults:
+            di = r.as_dict()
+            di['event_start'] = di['event_start'].strftime('%H:%M:%S')
+            di['event_end'] = di['event_end'].strftime('%H:%M:%S')
+            results.append(di)
     else:
-        results = Event.query.all()
+        qresults = Event.query.all()
+        results = [r.as_dict() for r in qresults]
 
-    return jsonify([r.as_dict() for r in results])
+    return jsonify(results)
+    # if getattr(results[0],'as_dict', None):
+    # return jsonify([r.as_dict() for r in results])
 
 
 @app.route('/calendar/v1.0/events', methods=['POST'])
 @auth.login_required
 def create_task():
+    print(request.args.get('key'))
+    if request.args.get('key') != 'publish_key':
+        abort(401)
+
     if not request.json or 'title' not in request.json or 'event_owner' not in request.json \
             or 'details' not in request.json or 'event_start' not in request.json or 'event_end' not in request.json:
         abort(400)

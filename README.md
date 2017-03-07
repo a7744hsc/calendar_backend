@@ -15,14 +15,18 @@ APIs available:
 =======
 ### Endpoint : calendar/v1.0/events 
  1. [GET]get all events
- 2. [POST] save a new event 
+ 
+### Endpoint :calendar/v1.0/events?key=publish_key 
+1. [POST] save a new event, must post with a valid key('publish_key' by default) 
+            
     
     header: "Content-Type: application/json"
     
     body:{"title":"first from post",
             "details":"still no details",
-            "event_start":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
-            "event_end":"2017-03-03 11:50:00" //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
+            "event_start":"2017-03-03 11:50:00", //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
+            "event_end":"2017-03-03 11:50:00", //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
+            "event_owner":"eOhc"
         }
     
  
