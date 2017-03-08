@@ -47,7 +47,6 @@ def get_events():
 @app.route('/calendar/v1.0/events', methods=['POST'])
 @auth.login_required
 def create_task():
-    print(request.args.get('key'))
     if request.args.get('key') != 'publish_key':
         abort(401)
 
