@@ -4,17 +4,16 @@ from flask_httpauth import HTTPBasicAuth
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from utils import parse_date, parse_datetime
-import os
 from sqlalchemy import func, and_, extract
 
 app = Flask(__name__)
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
-        SQLALCHEMY_DATABASE_URI='sqlite:///calendar.db',
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SQLALCHEMY_ECHO=False,
-        SECRET_KEY='development key',
+    SQLALCHEMY_DATABASE_URI='sqlite:///calendar.db',
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    SQLALCHEMY_ECHO=False,
+    SECRET_KEY='development key',
 ))
 app.json_encoder = CustomJSONEncoder
 auth = HTTPBasicAuth()
@@ -38,10 +37,7 @@ def get_events():
     else:
         qresults = Event.query.all()
         results = [r.as_dict() for r in qresults]
-
     return jsonify(results)
-    # if getattr(results[0],'as_dict', None):
-    # return jsonify([r.as_dict() for r in results])
 
 
 @app.route('/calendar/v1.0/events', methods=['POST'])
@@ -65,6 +61,22 @@ def create_task():
     db_alchemy.session.commit()
 
     return jsonify({'Success': 'True', 'event': evt.as_dict()}), 201
+
+
+@app.route('/calendar/v1.0/events/<event_id>', methods=['GET'])
+def get_event_by_id(event_id):
+    evt = db_alchemy.session.query(Event).filter_by(id=event_id).first()
+    return jsonify(evt.as_dict())
+
+
+@app.route('/calendar/v1.0/events/<event_id>', methods=['DELETE'])
+def remove_event_by_id(event_id):
+    if db_alchemy.session.query(Event).filter_by(id=event_id).first() is not None:
+        db_alchemy.session.query(Event).filter_by(id=event_id).delete()
+        db_alchemy.session.commit()
+        return jsonify({'Success': 'True'}), 201
+    else:
+        return make_response(jsonify({'Error': 'The event is not exist'}), 400)
 
 
 @app.route('/calendar/v1.0/daysWithEvent', methods=['GET'])

@@ -17,7 +17,7 @@ APIs available:
  1. [GET]get all events
  
 ### Endpoint :calendar/v1.0/events?key=publish_key 
-1. [POST] save a new event, must post with a valid key('publish_key' by default) 
+ 1. [POST] save a new event, must post with a valid key('publish_key' by default)
             
     
     header: "Content-Type: application/json"
@@ -29,7 +29,12 @@ APIs available:
             "event_owner":"eOhc"
         }
     
- 
+
+### Endpoint : /calendar/v1.0/events/<event_id>
+ 1. [GET] get an event by id
+ 2. [DELETE] remove an event by id
+
+
 ### Endpoint: calendar/v1.0/events?date=2017_03_03    //accept %Y_%m_%d or %Y-%m-%d
  1. [GET]get all events for special day
  
