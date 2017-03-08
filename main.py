@@ -11,7 +11,6 @@ app = Flask(__name__)
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
-        DATABASE=os.path.join(app.root_path, 'calendar.db'),
         SQLALCHEMY_DATABASE_URI='sqlite:///calendar.db',
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
