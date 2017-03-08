@@ -3,7 +3,7 @@ This app is developed on python 3.6 and Flask 0.12
 Installation
 ============
 1. install python and pip 
-2. pip install flask flask-httpauth
+2. pip install -r requirements.txt
 
 Run
 =========
