@@ -19,7 +19,7 @@ app.json_encoder = CustomJSONEncoder
 auth = HTTPBasicAuth()
 db_alchemy = SQLAlchemy(app)
 from models import *
-
+ADMIN_TOKEN = 'publish_key'
 
 @app.route('/calendar/v1.0/events', methods=['GET'])
 @auth.login_required
@@ -43,7 +43,7 @@ def get_events():
 @app.route('/calendar/v1.0/events', methods=['POST'])
 @auth.login_required
 def create_task():
-    if request.args.get('key') != 'publish_key':
+    if request.args.get('key') != ADMIN_TOKEN:
         abort(401)
 
     if not request.json or 'title' not in request.json or 'event_owner' not in request.json \
@@ -71,6 +71,8 @@ def get_event_by_id(event_id):
 
 @app.route('/calendar/v1.0/events/<event_id>', methods=['DELETE'])
 def remove_event_by_id(event_id):
+    if request.args.get('key') != ADMIN_TOKEN:
+        abort(401)
     if db_alchemy.session.query(Event).filter_by(id=event_id).first() is not None:
         db_alchemy.session.query(Event).filter_by(id=event_id).delete()
         db_alchemy.session.commit()

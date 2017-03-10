@@ -32,7 +32,7 @@ APIs available:
 
 ### Endpoint : /calendar/v1.0/events/<event_id>
  1. [GET] get an event by id
- 2. [DELETE] remove an event by id
+ 2. [DELETE] remove an event by id, when delete a event, you should specify the key by ?key=xxx
 
 
 ### Endpoint: calendar/v1.0/events?date=2017_03_03    //accept %Y_%m_%d or %Y-%m-%d
