@@ -26,8 +26,37 @@ APIs available:
             "details":"still no details",
             "event_start":"2017-03-03 11:50:00", //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
             "event_end":"2017-03-03 11:50:00", //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
-            "event_owner":"eOhc"
+            "event_owner":"eOhc",
+            "repeat_times":"1"  // this attribute indicate how many times this event repeated by week
         }
+    If your request is valid, a json like as follows will be returned.
+    ```
+      {"Number": 2,
+      "Success": "True",
+      "events": [
+        {
+          "created_date": "2017-03-18 23:37:19.529038",
+          "details": "still no details",
+          "event_end": "2017-03-03 11:50:00",
+          "event_owner": "eOhc",
+          "event_start": "2017-03-03 11:50:00",
+          "id": null,
+          "last_modified_date": "2017-03-18 23:37:19.529043",
+          "title": "first from post"
+        },
+        {
+          "created_date": "2017-03-18 23:37:19.563166",
+          "details": "still no details",
+          "event_end": "2017-03-10 11:50:00",
+          "event_owner": "eOhc",
+          "event_start": "2017-03-10 11:50:00",
+          "id": null,
+          "last_modified_date": "2017-03-18 23:37:19.563172",
+          "title": "first from post"
+        }
+      ]
+    }
+    ```
     
 
 ### Endpoint : /calendar/v1.0/events/<event_id>

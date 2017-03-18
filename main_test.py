@@ -40,6 +40,22 @@ class FlaskTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(res_obj), 6)
 
+    def test_create_multiple_events(self):
+        response = self.app.post('/calendar/v1.0/events?key=publish_key', headers={
+            'Authorization': 'Basic ' + base64.b64encode(bytes("user:passwd", 'utf-8')).decode('utf-8'),
+            'Content-Type': 'application/json'
+        }, data=json.dumps({"title": "first from post",
+                            "details": "still no details",
+                            "event_start": "2017-03-03 11:50:00",
+                            "event_end": "2017-03-03 11:50:00",
+                            "event_owner": "eOhc",
+                            "repeat_times": "2"
+                            }))
+        response_str = response.data.decode('unicode_escape')
+        res_obj = json.loads(response_str)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(res_obj['Success'], 'True')
+
 
 if __name__ == '__main__':
     unittest.main()

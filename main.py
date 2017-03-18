@@ -1,7 +1,7 @@
 from flask import Flask, g, jsonify, request, abort, make_response
 from CustomJSONEncoder import CustomJSONEncoder
 from flask_httpauth import HTTPBasicAuth
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from utils import parse_date, parse_datetime
 from sqlalchemy import func, and_, extract
@@ -19,7 +19,9 @@ app.json_encoder = CustomJSONEncoder
 auth = HTTPBasicAuth()
 db_alchemy = SQLAlchemy(app)
 from models import *
+
 ADMIN_TOKEN = 'publish_key'
+
 
 @app.route('/calendar/v1.0/events', methods=['GET'])
 @auth.login_required
@@ -55,21 +57,30 @@ def create_task():
     start_dt = parse_datetime(request.json['event_start'])
     end_dt = parse_datetime(request.json['event_end'])
     owner = request.json['event_owner']
-    evt = Event(event_start=start_dt, event_end=end_dt, created_date=datetime.now(), last_modified_date=datetime.now(),
-                event_owner=owner, title=title, details=details)
-    db_alchemy.session.add(evt)
+    repeat_times = int(request.json['repeat_times'])
+
+    events_created = list()
+    for week in range(repeat_times):
+        evt = Event(event_start=start_dt + timedelta(days=7 * week), event_end=end_dt + timedelta(days=7 * week)
+                    , created_date=datetime.now(), last_modified_date=datetime.now()
+                    , event_owner=owner, title=title, details=details)
+        events_created.append(evt.as_dict());
+        db_alchemy.session.add(evt)
+
     db_alchemy.session.commit()
 
-    return jsonify({'Success': 'True', 'event': evt.as_dict()}), 201
+    return jsonify({'Success': 'True', 'Number': repeat_times, 'events': events_created}), 201
 
 
 @app.route('/calendar/v1.0/events/<event_id>', methods=['GET'])
+@auth.login_required
 def get_event_by_id(event_id):
     evt = db_alchemy.session.query(Event).filter_by(id=event_id).first()
     return jsonify(evt.as_dict())
 
 
 @app.route('/calendar/v1.0/events/<event_id>', methods=['DELETE'])
+@auth.login_required
 def remove_event_by_id(event_id):
     if request.args.get('key') != ADMIN_TOKEN:
         abort(401)
