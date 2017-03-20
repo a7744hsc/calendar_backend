@@ -5,11 +5,15 @@ Installation
 1. install python and pip 
 2. pip install -r requirements.txt
 
-Run
-=========
+Run a debug server
+==================
 On Linux or MacOS, just one command in terminal
 >FLASK_APP=main.py flask run
-Or you can just run the `main.py` 
+Or you can just run the `main.py`
+
+Run on production with gunicorn
+===============================
+gunicorn -w 4 -b 0.0.0.0:port main:app
 
 APIs available:
 =======
@@ -22,13 +26,17 @@ APIs available:
     
     header: "Content-Type: application/json"
     
-    body:{"title":"first from post",
+    body:
+    ```
+    {"title":"first from post",
             "details":"still no details",
             "event_start":"2017-03-03 11:50:00", //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
             "event_end":"2017-03-03 11:50:00", //accept %Y-%m-%d %H:%M:%S  or %Y_%m_%d %H:%M:%S
             "event_owner":"eOhc",
             "repeat_times":"1"  // this attribute indicate how many times this event repeated by week
-        }
+     }
+    ```
+
     If your request is valid, a json like as follows will be returned.
     ```
       {"Number": 2,
